@@ -430,7 +430,7 @@ class So
         {
             std::cout << std::endl;
             std::cout << "---------------------------------------------------------" << std::endl;
-            std::cout << "| Hello This Is A Virtual System Operational            |" << std::endl;
+            std::cout << "| Hello This Is A Virtual Operating System              |" << std::endl;
             std::cout << "| Storage : " << storage -> get_csm ( ) << " mb !                                 |" << std::endl;
             std::cout << "| Memory : " << memory -> get_cmm ( ) << " mb !                                    |" << std::endl;
             std::cout << "---------------------------------------------------------" << std::endl;
