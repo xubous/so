@@ -67,15 +67,3 @@ Run the OS simulation:
 ./virtual_os
 
 ---
-
-## How to Test
-
-1. Clone the repository:
-   ```bash
-   git clone <REPO_URL>
-
-2. Compile the project using your C++ compiler:
-   g++ -std=c++17 main.cpp -o virtual_os
-   
-3. Run the OS simulation:
-   ./virtual_os
