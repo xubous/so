@@ -277,6 +277,8 @@ class Cpu
 
         // controle e fluxo de execuções
         /* mux e demux */
+
+        // destrutores classes
 };
 
 /*---------------------------------------------*/
