@@ -54,16 +54,15 @@ The project simulates:
 ## How to Test
 
 1. Clone the repository:
-   ```bash
    git clone <REPO_URL>
    cd virtual-os-cpp
 
-    Compile the project using your C++ compiler:
+2. Compile the project using your C++ compiler:
 
-g++ -std=c++17 main.cpp -o virtual_os
+   g++ -std=c++17 main.cpp -o virtual_os
 
-Run the OS simulation:
+3. Run the OS simulation:
 
-./virtual_os
+   ./virtual_os
 
 ---
