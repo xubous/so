@@ -76,7 +76,10 @@ class Application
             process = new Process ( );
         }
 
-        ~ Application ( ) { delete process; }
+        ~ Application ( )
+        {
+            delete process;
+        }
 
         int get_pid_app ( ) { return process -> get_pid ( ); }
 
@@ -148,6 +151,12 @@ class NodeList
             next = previous = nullptr;
         }
 
+        ~ NodeList ( ) 
+        { 
+            delete next;
+            delete previous; 
+        }
+
         int get_pid ( ) { return pid; }
 
         NodeList * get_next ( ) { return next; }
@@ -170,6 +179,12 @@ class LinkedList
         {
             head = new NodeList ( );
             last = head;
+        }
+
+        ~ LinkedList ( ) 
+        { 
+            delete head; 
+            delete last; 
         }
 
         void insert_linked_list ( int pid )
@@ -196,25 +211,57 @@ class LinkedList
 class Ula
 {
     public :
-        Ula ( )
-        {
+        Ula ( ) { };
 
-        }
+        ~ Ula ( ) { };
+
+        bool and_ ( ) { };
+
+        bool or_ ( ) { };
+
+        bool xor_ ( ) { };
+
+        bool not_ ( ) { };
+
+        int sum ( ) { };
+
+        int sub ( ) { };
+
+        int increment ( ) { };
+
+        int decrement ( ) { };
 };
 
 class Mmu
 {
+    public :
+        Mmu ( ) { };
 
+        ~ Mmu ( ) { };
+
+        void alloc_ ( ) { };
+
+        void free_ ( ) { };
+
+        void protect_ ( ) { };
+        
+        void swap_ ( ) { };
 };
 
 class Mux
 {
+    public :
+        Mux ( ) { };
 
+        ~ Mux ( ) { };
 };
 
 class Demux
 {
-    
+    public :
+        Demux ( ) { };
+
+        ~ Demux ( ) { };
 };
 
 class Control
@@ -222,6 +269,19 @@ class Control
     private :
         Mux * mux;
         Demux * demux;
+
+    public :
+        Control ( )
+        {
+            mux = new Mux ( );
+            demux = new Demux ( );
+        }
+
+        ~ Control ( )
+        {
+            delete mux;
+            delete demux;
+        }
 };
 
 class Cpu
@@ -239,7 +299,12 @@ class Cpu
             control = new Control ( );
         }
 
-        ~ Cpu ( ) { }
+        ~ Cpu ( )
+        {
+            delete ll;
+            delete ula;
+            delete control;
+        }
 
         void insert_cpu ( int pid )
         {
@@ -250,35 +315,6 @@ class Cpu
         {
             ll -> show ( );
         }
-
-        // ula
-        /* logicas -> and, or, xor, not */
-        /* aritmeticas -> soma, subtração, incremento e decremento */
-
-        // gerenciamento de memoria
-        /* 
-            tipos de memoria 
-            {
-                - memoria principal ( ram )
-                - memoria secundaria ( hd / ssd )
-                - cache
-            } 
-            
-            funções da memoria
-            {
-                - alocação - reserva memoria pra processos
-                - liberação - libera a memoria dos processos quando nao for mais usada
-                - proteção - impedir acesso indevidos entre processos
-                - swap - mover dados entre ram e disco
-            }
-
-            unidade de gerenciamento de cpu -> mmu 
-        */
-
-        // controle e fluxo de execuções
-        /* mux e demux */
-
-        // destrutores classes
 };
 
 /*---------------------------------------------*/
@@ -296,7 +332,12 @@ class NodeTree
             left = right = nullptr;
         }
 
-        ~ NodeTree ( ) { }
+        ~ NodeTree ( )
+        {
+            delete application;
+            delete left;
+            delete right;
+        }
 
         int get_pid_nodeTree ( ) { return application -> get_pid_app ( ); }
 
@@ -322,7 +363,10 @@ class Tree
             root = nullptr;
         }
 
-        ~ Tree ( ) { }
+        ~ Tree ( )
+        {
+            delete root;
+        }
 
         NodeTree * insert_rec ( Application * application, NodeTree * i )
         {
@@ -416,9 +460,16 @@ class So
             memory = new Memory ( capacity_memory_megabites );
             tree = new Tree ( );
             user = new User ( );
-        };
+        }
 
-        ~ So ( ) { delete storage; delete memory; delete tree; };
+        ~ So ( )
+        {
+            delete cpu;
+            delete storage;
+            delete memory;
+            delete tree;
+            delete user;
+        }
 
         void insert ( )
         {
