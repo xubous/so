@@ -9,7 +9,7 @@
 
 // using namespace std;
 
-/* ------------------------------------------- */
+/* ------------- Assistant ------------------- */
 void pre_config ( ) { srand ( time ( 0 ) ); }
 
 int random_number_pid ( )
@@ -35,8 +35,10 @@ long random_number_memory ( )
 
     return min + rand ( ) % ( max - min + 1 ); 
 }
-/* ------------------------------------------- */
+/* ------------ End Assistant ---------------- */
 
+
+/* ------------- Application ----------------- */
 class Process
 {
     private :
@@ -91,7 +93,10 @@ class Application
             std::cout << "Memomy Application -> " << process -> get_space_memory_process ( ) << std::endl;
         }
 };
+/* ------------- End Application ------------- */
 
+
+/* --------------- Storage ------------------- */
 class Storage
 {
     private :
@@ -110,7 +115,10 @@ class Storage
             return capacity_storage_megabites;
         }
 };
+/* -------------- End Storage ---------------- */
 
+
+/* --------------- Memory ------------------- */
 class Memory
 {
     private :
@@ -129,29 +137,33 @@ class Memory
             return capacity_memory_megabites;
         }
 };
+/* -------------- End Memory ---------------- */
 
-/*---------------------------------------------*/
-class NodeList
+
+/* ------------------ Cpu -------------------- */
+
+// ------------------------------------------- 
+class NodeLinkedListPids
 {
     private :
         int pid;
-        NodeList * next;
-        NodeList * previous;
+        NodeLinkedListPids * next;
+        NodeLinkedListPids * previous;
     
     public :
-        NodeList ( )
+        NodeLinkedListPids ( )
         {
             pid = 0;
             next = previous = nullptr;
         }
 
-        NodeList ( int pid )
+        NodeLinkedListPids ( int pid )
         {
             this -> pid = pid;
             next = previous = nullptr;
         }
 
-        ~ NodeList ( ) 
+        ~ NodeLinkedListPids ( ) 
         { 
             delete next;
             delete previous; 
@@ -159,29 +171,29 @@ class NodeList
 
         int get_pid ( ) { return pid; }
 
-        NodeList * get_next ( ) { return next; }
+        NodeLinkedListPids * get_next ( ) { return next; }
 
-        NodeList * get_previous ( ) { return previous; }
+        NodeLinkedListPids * get_previous ( ) { return previous; }
 
-        void set_next ( NodeList * next ) { this -> next = next; }
+        void set_next ( NodeLinkedListPids * next ) { this -> next = next; }
 
-        void set_previous ( NodeList * previous ) { this -> previous = previous; }
+        void set_previous ( NodeLinkedListPids * previous ) { this -> previous = previous; }
 };
 
-class LinkedList
+class LinkedListPid
 {
     private :
-        NodeList * head;
-        NodeList * last;
+        NodeLinkedListPids * head;
+        NodeLinkedListPids * last;
 
     public :
-        LinkedList ( )
+        LinkedListPid ( )
         {
-            head = new NodeList ( );
+            head = new NodeLinkedListPids ( );
             last = head;
         }
 
-        ~ LinkedList ( ) 
+        ~ LinkedListPid ( ) 
         { 
             delete head; 
             delete last; 
@@ -189,7 +201,7 @@ class LinkedList
 
         void insert_linked_list ( int pid )
         {
-            NodeList * node = new NodeList ( pid );
+            NodeLinkedListPids * node = new NodeLinkedListPids ( pid );
 
             last -> set_next ( node );
             last = last -> get_next ( );
@@ -199,69 +211,86 @@ class LinkedList
         {
             if ( head == last ) std::cout << "Without Apps";
 
-            NodeList * current = head -> get_next ( );
+            NodeLinkedListPids * current = head -> get_next ( );
 
             while ( current != nullptr ) { std::cout << current -> get_pid ( ) << " "; current = current -> get_next ( ); }
 
             std::cout << std::endl;
         }
 };
-/*---------------------------------------------*/
+// -------------------------------------------
 
+// -------------------------------------------
 class Ula
 {
     public :
-        Ula ( ) { };
+        Ula ( ) { }
 
-        ~ Ula ( ) { };
+        ~ Ula ( ) { }
 
-        bool and_ ( ) { };
+        bool and_ ( bool m1, bool m2 ) { return m1 && m2; }
 
-        bool or_ ( ) { };
+        bool or_ ( bool m1, bool m2 ) { return m1 || m2; }
 
-        bool xor_ ( ) { };
+        bool xor_ ( bool m1, bool m2 ) { return m1 ^ m2; }
 
-        bool not_ ( ) { };
+        bool not_ ( bool m1 ) { return ! m1; }
 
-        int sum ( ) { };
+        int sum ( std::string first_installment, std::string second_installment ) 
+        {
+            return 0;
+        }
 
-        int sub ( ) { };
+        int sub ( std::string minuend, std::string subtrahend )
+        { 
+            return 0;
+        }
 
-        int increment ( ) { };
+        int increment ( std::string input ) 
+        { 
+            return 0;
+        }
 
-        int decrement ( ) { };
+        int decrement ( std::string input ) 
+        { 
+            return 0;
+        }
 };
+// -------------------------------------------                                                                                   
 
+// -------------------------------------------
 class Mmu
 {
     public :
-        Mmu ( ) { };
+        Mmu ( ) { }
 
-        ~ Mmu ( ) { };
+        ~ Mmu ( ) { }
 
-        void alloc_ ( ) { };
+        void alloc_ ( ) { }
 
-        void free_ ( ) { };
+        void free_ ( ) { }
 
-        void protect_ ( ) { };
+        void protect_ ( ) { }
         
-        void swap_ ( ) { };
+        void swap_ ( ) { }
 };
+// -------------------------------------------
 
+// -------------------------------------------
 class Mux
 {
     public :
-        Mux ( ) { };
+        Mux ( ) { }
 
-        ~ Mux ( ) { };
+        ~ Mux ( ) { }
 };
 
 class Demux
 {
     public :
-        Demux ( ) { };
+        Demux ( ) { }
 
-        ~ Demux ( ) { };
+        ~ Demux ( ) { }
 };
 
 class Control
@@ -283,19 +312,23 @@ class Control
             delete demux;
         }
 };
+// -------------------------------------------
 
+// -------------------------------------------
 class Cpu
 {
     private :
-        LinkedList * ll;
+        LinkedListPid * ll;
+        Mmu * mmu;
         Ula * ula;
         Control * control;
 
     public :
         Cpu ( ) 
         {
-            ll = new LinkedList ( );
+            ll = new LinkedListPid ( );
             ula = new Ula ( );
+            mmu = new Mmu ( );
             control = new Control ( );
         }
 
@@ -303,6 +336,7 @@ class Cpu
         {
             delete ll;
             delete ula;
+            delete mmu;
             delete control;
         }
 
@@ -317,37 +351,40 @@ class Cpu
         }
 };
 
-/*---------------------------------------------*/
-class NodeTree
+/* ---------------- End Cpu ------------------ */
+
+
+/* --------------- System ------------------- */
+class NodeSystemApplication
 {
     private :
         Application * application;
-        NodeTree * left;
-        NodeTree * right;
+        NodeSystemApplication * left;
+        NodeSystemApplication * right;
     
     public :
-        NodeTree ( Application * application )
+        NodeSystemApplication ( Application * application )
         {
             this -> application = application;
             left = right = nullptr;
         }
 
-        ~ NodeTree ( )
+        ~ NodeSystemApplication ( )
         {
             delete application;
             delete left;
             delete right;
         }
 
-        int get_pid_nodeTree ( ) { return application -> get_pid_app ( ); }
+        int get_pid_node ( ) { return application -> get_pid_app ( ); }
 
-        NodeTree * get_left ( ) { return left; }
+        NodeSystemApplication * get_left ( ) { return left; }
 
-        NodeTree * get_right ( ) { return right; }
+        NodeSystemApplication * get_right ( ) { return right; }
 
-        void set_left ( NodeTree * left ) { this -> left = left; }
+        void set_left ( NodeSystemApplication * left ) { this -> left = left; }
         
-        void set_right ( NodeTree * right ) { this -> right = right; }
+        void set_right ( NodeSystemApplication * right ) { this -> right = right; }
 
         void show ( ) { application -> app_ ( ); }
 };
@@ -355,7 +392,7 @@ class NodeTree
 class Tree
 {
     private :
-        NodeTree * root;
+        NodeSystemApplication * root;
 
     public :
         Tree ( )
@@ -368,23 +405,23 @@ class Tree
             delete root;
         }
 
-        NodeTree * insert_rec ( Application * application, NodeTree * i )
+        NodeSystemApplication * insert_rec ( Application * application, NodeSystemApplication * i )
         {
-            if ( i == nullptr ) { return new NodeTree ( application ); }
-            else if ( application -> get_pid_app ( ) > i -> get_pid_nodeTree ( ) ) { i -> set_right ( insert_rec ( application, i -> get_right ( ) ) ); }
-            else if ( application -> get_pid_app ( ) < i -> get_pid_nodeTree ( ) ) { i -> set_left ( insert_rec ( application, i -> get_left ( ) ) ); }
+            if ( i == nullptr ) { return new NodeSystemApplication ( application ); }
+            else if ( application -> get_pid_app ( ) > i -> get_pid_node ( ) ) { i -> set_right ( insert_rec ( application, i -> get_right ( ) ) ); }
+            else if ( application -> get_pid_app ( ) < i -> get_pid_node ( ) ) { i -> set_left ( insert_rec ( application, i -> get_left ( ) ) ); }
 
             return i;
         }
 
-        NodeTree * insert ( Application * application )
+        NodeSystemApplication * insert ( Application * application )
         {
             root = insert_rec ( application, root );
 
             return root;
         }
 
-        void show_tree ( NodeTree * i )
+        void show_tree ( NodeSystemApplication * i )
         {
             if ( i != nullptr )
             {
@@ -400,8 +437,10 @@ class Tree
             show_tree ( root );
         }
 };
-/*---------------------------------------------*/
+/* ------------- End System ----------------- */
 
+
+/* ---------------- User --------------------- */
 class User
 {
     private :
@@ -437,13 +476,16 @@ class User
             std::cout << std::endl;
         }
 };
+/* -------------- End User ------------------- */
 
+
+/* ------------------ So --------------------- */
 class So
 {
     private :
-        Cpu * cpu;
         Storage * storage;
         Memory * memory;
+        Cpu * cpu;
         Tree * tree;
         User * user;
 
@@ -455,18 +497,18 @@ class So
             long capacity_storage_megabites = space_capacity * megabite;
             long capacity_memory_megabites = memory_capacity * megabite;
 
-            cpu = new Cpu ( );
             storage = new Storage ( capacity_storage_megabites );
             memory = new Memory ( capacity_memory_megabites );
+            cpu = new Cpu ( );
             tree = new Tree ( );
             user = new User ( );
         }
 
         ~ So ( )
         {
-            delete cpu;
             delete storage;
             delete memory;
+            delete cpu;
             delete tree;
             delete user;
         }
@@ -553,6 +595,8 @@ class So
             
         }
 };
+/* ---------------- End So ------------------- */
+
 
 int main ( )
 {   
