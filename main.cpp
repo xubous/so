@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <random>
 #include <ctime>
+#include <cmath>
 
 #define megabite 1024
 #define space_storage_input 100
@@ -11,6 +12,15 @@
 
 /* ------------- Assistant ------------------- */
 void pre_config ( ) { srand ( time ( 0 ) ); }
+
+void clear_console ( )
+{
+    #ifdef _WIN32 
+        system ( "cls" );
+    #elif __linux__  
+        system ( "clear" );
+    #endif
+}
 
 int random_number_pid ( )
 {
@@ -31,7 +41,7 @@ long random_number_storage ( )
 long random_number_memory ( )
 {
     int min = 0;
-    int max = 16384;
+    int max = 3072;
 
     return min + rand ( ) % ( max - min + 1 ); 
 }
@@ -83,6 +93,10 @@ class Application
             delete process;
         }
 
+        long get_storage_application ( ) { return process -> get_space_storage_process ( ); }
+
+        long get_memory_application ( ) { return process -> get_space_memory_process ( ); }
+
         int get_pid_app ( ) { return process -> get_pid ( ); }
 
         void app_ ( )
@@ -101,19 +115,22 @@ class Storage
 {
     private :
         long capacity_storage_megabites;
+        long storage_used;
 
     public :
         Storage ( long capacity_storage_megabites )
         {
             this -> capacity_storage_megabites = capacity_storage_megabites;;
+            storage_used = 0; 
         }
 
         ~ Storage ( ) { }
 
-        long get_csm ( )
-        {
-            return capacity_storage_megabites;
-        }
+        long get_storage_megabites ( ) { return capacity_storage_megabites; }
+
+        void change_storage_used ( long application_storage ) { storage_used = storage_used + application_storage; }
+
+        long get_storage_used ( ) { return storage_used; }
 };
 /* -------------- End Storage ---------------- */
 
@@ -123,19 +140,22 @@ class Memory
 {
     private :
         long capacity_memory_megabites;
+        long memory_used;
 
     public :
         Memory ( long capacity_memory_megabites )
         {
             this -> capacity_memory_megabites = capacity_memory_megabites;
+            memory_used = 0;
         }
 
         ~ Memory ( ) { }
 
-        long get_cmm ( )
-        {
-            return capacity_memory_megabites;
-        }
+        long get_memory_megabites ( ) { return capacity_memory_megabites; }
+
+        void chance_memory_used ( long application_storage ) { memory_used = memory_used + application_storage; }
+
+        long get_memory_used ( ) { return memory_used; }
 };
 /* -------------- End Memory ---------------- */
 
@@ -221,6 +241,166 @@ class LinkedListPid
 // -------------------------------------------
 
 // -------------------------------------------
+class NodeIntArray
+{
+    public :
+        int value;
+        NodeIntArray * next;
+
+        NodeIntArray ( )
+        {
+            value = 0;
+            next = nullptr;
+        }
+
+        NodeIntArray ( int value )
+        {
+            this -> value = value;
+            next = nullptr;
+        }
+
+        ~ NodeIntArray ( )
+        {
+            delete next;
+        }
+};
+
+class IntArray
+{
+    public :
+        NodeIntArray * head;
+        NodeIntArray * last;
+
+        IntArray ( )
+        {
+            head = new NodeIntArray ( );
+            last = head;
+        }
+
+        ~ IntArray ( )
+        {
+            delete head;
+            delete last;
+        }
+
+        bool is_empty ( )
+        {
+            return head -> next == nullptr;
+        }
+
+        void invert_integer_from_bin ( )
+        {
+            int assistant [ 100 ] = { 0 };
+            int count = 0;
+
+            while ( ! this -> is_empty ( ) )
+            {
+                assistant [ count ] = this -> pop ( );
+                count = count + 1;
+            }
+
+            for ( int i = 0; i < count; i ++ ) 
+            {
+                this -> push ( assistant [ i ] );
+            }
+        }
+
+        void int_to_bin ( int integer_from_bin )
+        {
+            int copy = integer_from_bin;
+
+            while ( copy > 0 )
+            {
+                int rest = copy % 2;
+
+                push ( rest );
+
+                copy = copy / 2;
+            }
+
+            invert_integer_from_bin ( );
+        }
+
+        int length ( )
+        {
+            int count = 0;
+            NodeIntArray * current = head -> next;
+
+            while ( current != nullptr )
+            {
+                count ++;
+                current = current -> next;
+            }
+
+            return count;
+        }
+
+        int bin_to_int ( )
+        {
+            int response = 0;
+            int size = length ( ) - 1;
+            NodeIntArray * current = head -> next;
+
+            while ( current != nullptr )
+            {
+                response = response + current -> value * std::pow ( 2, size );
+                size --;
+                current = current -> next;
+            }
+
+            return response;
+        }
+
+        void push ( int x )
+        {
+            last -> next = new NodeIntArray ( x );
+            last = last -> next;
+        }
+
+        int pop ( )
+        {
+            if ( head == last ) return - 1;
+
+            if ( head -> next == last )
+            {
+                int value = last -> value;
+
+                delete last;
+
+                last = head;
+                head -> next = nullptr;
+
+                return value;
+            }
+
+            NodeIntArray * current = head -> next;
+
+            while ( current -> next != last && current -> next != nullptr ) current = current -> next;
+
+            int value = last -> value;
+
+            last = current;
+            last -> next = nullptr;
+
+            return value;
+        }
+
+        void show ( )
+        {
+            NodeIntArray * current = head -> next;
+
+            if ( is_empty ( ) ) std::cout << "Empty" << std::endl;
+
+            while ( current != nullptr )
+            {
+                std::cout << current -> value << " ";
+
+                current = current -> next;
+            }
+
+        }
+};
+
 class Ula
 {
     public :
@@ -228,32 +408,84 @@ class Ula
 
         ~ Ula ( ) { }
 
-        bool and_ ( bool m1, bool m2 ) { return m1 && m2; }
+        bool and_ ( int m1, int m2 ) { return m1 && m2; }
 
-        bool or_ ( bool m1, bool m2 ) { return m1 || m2; }
+        bool or_ ( int m1, int m2 ) { return m1 || m2; }
 
-        bool xor_ ( bool m1, bool m2 ) { return m1 ^ m2; }
+        bool xor_ ( int m1, int m2 ) { return m1 ^ m2; }
 
         bool not_ ( bool m1 ) { return ! m1; }
 
-        int sum ( std::string first_installment, std::string second_installment ) 
+        int sum ( int first_installment, int second_installment ) 
         {
-            return 0;
+            IntArray * sum_response = new IntArray ( );
+            IntArray * first_installment_bin = new IntArray ( );
+            IntArray * second_installment_bin = new IntArray ( );
+            int carry = 0;
+
+            first_installment_bin -> int_to_bin ( first_installment );
+            second_installment_bin -> int_to_bin ( second_installment );
+
+            while ( ! first_installment_bin -> is_empty ( ) || ! second_installment_bin -> is_empty ( ) )
+            {
+                int bit_01 = first_installment_bin -> is_empty ( ) ? 0 : first_installment_bin -> pop ( );
+                int bit_02 = second_installment_bin -> is_empty ( ) ? 0 : second_installment_bin -> pop ( );
+                int sum = bit_01 + bit_02 + carry;
+                int result_bit = sum % 2;
+
+                carry = sum / 2;
+
+                sum_response -> push ( result_bit );
+            }
+
+            if ( carry ) sum_response -> push ( carry );
+
+            sum_response -> invert_integer_from_bin ( );
+
+            return sum_response -> bin_to_int ( );
         }
 
-        int sub ( std::string minuend, std::string subtrahend )
+        int sub ( int minuend, int subtrahend )
         { 
-            return 0;
-        }
+            IntArray * sub_response = new IntArray ( );
+            IntArray * minuend_bin = new IntArray ( );
+            IntArray * subtrahend_bin = new IntArray ( );
+            int borrow = 0;
 
-        int increment ( std::string input ) 
-        { 
-            return 0;
-        }
+            minuend_bin -> int_to_bin ( minuend );
+            subtrahend_bin -> int_to_bin ( subtrahend );
 
-        int decrement ( std::string input ) 
-        { 
-            return 0;
+            while ( ! minuend_bin -> is_empty ( ) || ! subtrahend_bin -> is_empty ( ) )
+            {
+                int bin_01 = minuend_bin -> is_empty ( ) ? 0 : minuend_bin -> pop ( );
+                int bin_02 = subtrahend_bin -> is_empty ( ) ? 0 : subtrahend_bin -> pop ( );
+                int diff = bin_01 - bin_02 - borrow;
+
+                if ( diff < 0 )
+                {
+                    diff = diff + 2;
+                    borrow = 1;
+                } else
+                    {
+                        borrow = 0;
+                    }
+                
+                    sub_response -> push ( diff );
+            }
+
+            while ( sub_response -> length ( ) > 1 )
+            {
+                int bit = sub_response -> pop ( );
+
+                if ( bit == 1 )
+                {
+                    sub_response -> push ( bit );
+
+                    break;
+                }
+            }
+
+            return sub_response -> bin_to_int ( );
         }
 };
 // -------------------------------------------                                                                                   
@@ -338,6 +570,11 @@ class Cpu
             delete ula;
             delete mmu;
             delete control;
+        }
+
+        Ula * get_ula ( )
+        {
+            return ula;
         }
 
         void insert_cpu ( int pid )
@@ -450,7 +687,7 @@ class User
     public :
         User ( )
         {
-            system ( "clear" );
+            clear_console ( );
 
             std::cout << "Write A Username : " << std::endl;
             std::cin >> username;
@@ -517,22 +754,78 @@ class So
         {
             Application * application = new Application ( );
 
-            tree -> insert ( application );
-            cpu -> insert_cpu ( application -> get_pid_app ( ) );
+            if ( ( storage -> get_storage_used ( ) + application -> get_storage_application ( ) ) <= storage -> get_storage_megabites ( ) && ( memory -> get_memory_used ( ) < application -> get_memory_application ( ) ) <= memory -> get_memory_megabites ( ) )
+            {
+                tree -> insert ( application );
+                cpu -> insert_cpu ( application -> get_pid_app ( ) );
+                storage -> change_storage_used ( application -> get_storage_application ( ) );
+                memory -> chance_memory_used ( application -> get_memory_application ( ) );
+            } else 
+                {
+                    std::cout << "Memory Overflow Or Full Space Error" << std::endl;
+                }
         }
 
         void system_ ( )
         {
             std::cout << std::endl;
             std::cout << "---------------------------------------------------------" << std::endl;
-            std::cout << "| Hello This Is A Virtual Operating System              |" << std::endl;
-            std::cout << "| Storage : " << storage -> get_csm ( ) << " mb !                                 |" << std::endl;
-            std::cout << "| Memory : " << memory -> get_cmm ( ) << " mb !                                    |" << std::endl;
+            std::cout << "Hello, " << user -> get_username ( ) << " ! This Is A Virtual Operating System" << std::endl;
+            std::cout << "Storage : " << storage -> get_storage_megabites ( ) << " mb !" << std::endl;
+            std::cout << "Memory : " << memory -> get_memory_megabites ( ) << " mb !" << std::endl;
             std::cout << "---------------------------------------------------------" << std::endl;
             tree -> show ( );
             std::cout << "\n" << "Pids List : " << std::endl;
             cpu -> cpu_ ( );
             std::cout << std::endl;
+            std::cout << "Storage Used : " << storage -> get_storage_used ( ) << " mb !   Free : " << storage -> get_storage_megabites ( ) - storage -> get_storage_used ( ) << " mb ! " << std::endl;
+            std::cout << "Memory Used  : " << memory -> get_memory_used ( ) << " mb !   Free : " << memory -> get_memory_megabites ( ) - memory -> get_memory_used ( ) << " mb ! " << std::endl;
+            std::cout << std::endl;
+        }
+
+        Ula * get_ula ( )
+        {
+            return cpu -> get_ula ( );
+        }
+
+        int menu_calculator ( )
+        {
+            int option = - 1;
+
+            std::cout << "---------------------------------------" << std::endl;
+            std::cout << "Choose One Operation :" << std::endl;
+            std::cout << "0 - Exit" << std::endl;
+            std::cout << "1 - Sum" << std::endl;
+            std::cout << "2 - Sub" << std::endl;
+            std::cout << "3 - And " << std::endl;
+            std::cout << "4 - Or" << std::endl;
+            std::cout << "5 - Xor" << std::endl;
+            std::cout << "6 - Not" << std::endl;
+            std::cout << "---------------------------------------" << std::endl;
+
+            std::cin >> option;
+
+            switch ( option )
+            {
+                case 0: return 0;
+
+                case 1: return 1;
+
+                case 2: return 2;
+
+                case 3: return 3;
+
+                case 4: return 4;
+
+                case 5: return 5;
+
+                case 6: return 6;
+                
+                default:
+                    break;
+            }
+
+            return option;
         }
 
         void menu ( )
@@ -541,7 +834,7 @@ class So
 
             do
             {
-                system ( "clear" );
+                clear_console ( );
 
                 std::cout << "---------------------------------------" << std::endl;
                 std::cout << "| 1 - show system                     |" << std::endl;
@@ -557,39 +850,142 @@ class So
                 switch ( option )
                 {
                     case 0:
-                        system ( "clear" );
-                        while ( getchar ( ) != '\n' ) getchar ( );
-                        std::cout << "Enter to exit ..." << std::endl;
-                        getchar ( );
-                        std::cout << "Bye <3\t" ;
-                        break;
+                        {
+                            clear_console ( );
+                            while ( getchar ( ) != '\n' ) getchar ( );
+                            std::cout << "Enter to exit ..." << std::endl;
+                            getchar ( );
+                            std::cout << "Bye <3\t" ;
+                            break;
+                        }
 
                     case 1:
-                        system ( "clear" );
-                        system_ ( ); 
-                        while ( getchar ( ) != '\n' ) getchar ( );
-                        std::cout << "Enter to continue ..." << std::endl;
-                        getchar ( );
-                        break;
+                        {
+                            clear_console ( );
+                            system_ ( ); 
+                            while ( getchar ( ) != '\n' ) getchar ( );
+                            std::cout << "Enter to continue ..." << std::endl;
+                            getchar ( );
+                            break;
+                        }
 
                     case 2:
-                        system ( "clear" );
-                        insert ( );
-                        while ( getchar ( ) != '\n' ) getchar ( );
-                        std::cout << "Enter to continue ..." << std::endl;
-                        getchar ( );
-                        break;
+                        {
+                            clear_console ( );
+                            insert ( );
+                            while ( getchar ( ) != '\n' ) getchar ( );
+                            std::cout << "Enter to continue ..." << std::endl;
+                            getchar ( );
+                            break;
+                        }
 
                     case 3:
-                        system ( "clear" );
-                        user -> to_string ( );
-                        while ( getchar ( ) != '\n' ) getchar ( );
-                        std::cout << "Enter to continue ..." << std::endl;
-                        getchar ( );
-                        break;
+                        {
+                            clear_console ( );
+                            user -> to_string ( );
+                            while ( getchar ( ) != '\n' ) getchar ( );
+                            std::cout << "Enter to continue ..." << std::endl;
+                            getchar ( );
+                            break;
+                        }
+                    
+                    case 4:
+                        {
+                            clear_console ( );
+                            int option_menu_calculator = - 1;
+                            Ula * ula = cpu -> get_ula ( );
 
-                    default:
-                        break;
+                            do
+                            {
+                                clear_console ( );
+
+                                option_menu_calculator = menu_calculator ( );
+
+                                int first_value = 0, second_value = 0;
+
+                                clear_console ( );
+
+                               if ( option_menu_calculator != 6 && option_menu_calculator != 0 )
+                               {
+                                    std::cout << "Write the first value : " << std::endl;
+                                    std::cin >> first_value;
+                                    std::cout << "Write the second value : " << std::endl;
+                                    std::cin >> second_value;
+                               }
+
+                                clear_console ( );
+
+                                int result = 0;
+
+                                switch ( option_menu_calculator )
+                                {
+                                    case 1:
+                                        {
+                                            result = ula -> sum ( first_value, second_value );
+                                            std::cout << "Sum = " << result << std::endl;
+                                            std::cout << std::endl;
+                                            break;
+                                        }
+                                    
+                                    case 2:
+                                        {
+                                            result = ula -> sub ( first_value, second_value );
+                                            std::cout << "Sub = " << result << std::endl;
+                                            std::cout << std::endl;
+                                            break;
+                                        }
+                                    
+                                    case 3:
+                                        {
+                                            result = ula -> and_ ( first_value, second_value );
+                                            std::cout << "Result = " << result << std::endl;
+                                            std::cout << std::endl;
+                                            break;
+                                        }
+
+                                    case 4:
+                                        {
+                                            result = ula -> or_ ( first_value, second_value );
+                                            std::cout << "Result = " << result << std::endl;
+                                            std::cout << std::endl;
+                                            break;
+                                        }
+                                    
+                                    case 5:
+                                        {
+                                            result = ula -> xor_ ( first_value, second_value );
+                                            std::cout << "Result = " << result << std::endl;
+                                            std::cout << std::endl;
+                                            break;
+                                        }
+
+                                    case 6:
+                                        {
+                                            bool input = false;
+
+                                            std::cout << "Write A Bin : " << std::endl;
+                                            std::cin >> input;
+                                            clear_console ( );
+                                            result = ula -> not_ ( input );
+                                            std::cout << "Result = " << result << std::endl;
+                                            std::cout << std::endl;
+                                            break;
+                                        }
+
+                                    default:
+                                        break;
+                                }
+
+                                while ( getchar ( ) != '\n' ) getchar ( );
+                                std::cout << "Enter to continue ..." << std::endl;
+                                getchar ( );
+
+                            } while ( option_menu_calculator != 0 );
+
+                            break;
+                        }
+
+                    default: break;
                 }
             } while ( option != 0 );
             
@@ -597,12 +993,30 @@ class So
 };
 /* ---------------- End So ------------------- */
 
+void test ( )
+{
+    // IntArray * arr = new IntArray ( );
+
+    // arr -> int_to_bin ( 10 );
+    // arr -> show ( );
+    // std::cout << arr -> length ( ) << std::endl;
+    // int response = arr -> bin_to_int ( );
+    // std::cout << response << std::endl;
+
+    // std::cout << std::endl;
+
+    // Ula * ula = new Ula ( );
+    
+    // std::cout << ula -> sum ( 3, 2 ) << std::endl;
+}
 
 int main ( )
 {   
     So * so = new So ( space_storage_input, space_memory_input );
 
     so -> menu ( );
+
+    // test ( );
 
     return 0;
 }
