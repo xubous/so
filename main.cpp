@@ -13,6 +13,11 @@
 /* ------------- Assistant ------------------- */
 void pre_config ( ) { srand ( time ( 0 ) ); }
 
+bool is_bin ( int bin )
+{
+    return ( bin == 1 || bin == 0 );
+}
+
 void clear_console ( )
 {
     #ifdef _WIN32 
@@ -408,13 +413,43 @@ class Ula
 
         ~ Ula ( ) { }
 
-        bool and_ ( int m1, int m2 ) { return m1 && m2; }
+        int and_ ( int m1, int m2 ) 
+        {  
+            if ( ! is_bin ( m1 ) || ! is_bin ( m2 ) )
+            {
+                std::cout << "Write A Valid Bin Digit ..." << std::endl;
+                return - 1;
+            }
 
-        bool or_ ( int m1, int m2 ) { return m1 || m2; }
+            return m1 && m2;
+        }
 
-        bool xor_ ( int m1, int m2 ) { return m1 ^ m2; }
+        int or_ ( int m1, int m2 )
+        {
+            if ( ! is_bin ( m1 ) || ! is_bin ( m2 ) )
+            {
+                std::cout << "Write A Valid Bin Digit ..." << std::endl;
+                return - 1;
+            }
 
-        bool not_ ( bool m1 ) { return ! m1; }
+            return m1 || m2;
+        }
+
+        int xor_ ( int m1, int m2 )
+        {
+            return m1 ^ m2;
+        }
+
+        int not_ ( bool m1 )
+        {
+            if ( ! is_bin ( m1 ) )
+            {
+                std::cout << "Write A Valid Bin Digit ..." << std::endl;
+                return - 1;
+            }
+
+            return ! m1;
+        }
 
         int sum ( int first_installment, int second_installment ) 
         {
@@ -447,6 +482,8 @@ class Ula
 
         int sub ( int minuend, int subtrahend )
         { 
+            if ( minuend < subtrahend ) return - 1;
+
             IntArray * sub_response = new IntArray ( );
             IntArray * minuend_bin = new IntArray ( );
             IntArray * subtrahend_bin = new IntArray ( );
@@ -465,27 +502,33 @@ class Ula
                 {
                     diff = diff + 2;
                     borrow = 1;
-                } else
-                    {
-                        borrow = 0;
-                    }
-                
-                    sub_response -> push ( diff );
+                } 
+                else
+                {
+                    borrow = 0;
+                }
+
+                sub_response -> push ( diff );
             }
 
             while ( sub_response -> length ( ) > 1 )
             {
                 int bit = sub_response -> pop ( );
-
                 if ( bit == 1 )
                 {
                     sub_response -> push ( bit );
-
                     break;
                 }
             }
 
-            return sub_response -> bin_to_int ( );
+            sub_response -> invert_integer_from_bin ( );
+            int result = sub_response -> bin_to_int ( );
+
+            delete sub_response;
+            delete minuend_bin;
+            delete subtrahend_bin;
+
+            return result;
         }
 };
 // -------------------------------------------                                                                                   
@@ -498,13 +541,48 @@ class Mmu
 
         ~ Mmu ( ) { }
 
-        void alloc_ ( ) { }
+        bool alloc_ ( Application * application, Storage * storage, Memory * memory ) 
+        {
+            return ( storage -> get_storage_used ( ) + application -> get_storage_application ( ) ) <= storage -> get_storage_megabites ( ) && ( memory -> get_memory_used ( ) < application -> get_memory_application ( ) ) <= memory -> get_memory_megabites ( );
+        } 
+ 
+        void free_ ( Application * application, Storage * storage, Memory * memory )
+        {
+            long app_storage = application -> get_storage_application ( );
+            long app_memory  = application -> get_memory_application ( );
 
-        void free_ ( ) { }
+            if ( storage -> get_storage_used ( ) >= app_storage ) 
+            {
+                storage -> change_storage_used ( - app_storage );
+            }
 
-        void protect_ ( ) { }
-        
-        void swap_ ( ) { }
+            if ( memory -> get_memory_used ( ) >= app_memory ) 
+            {
+                memory -> chance_memory_used ( - app_memory );
+            }
+        }
+
+        void protect_ ( Application * application )
+        {
+            std::cout << "Memory Region Of Application With PID " << application -> get_pid_app ( ) << " Protected !" << std::endl;
+        }
+
+        void swap_ ( Application * app_out, Application * app_in, Memory * memory )
+        {
+            long mem_out = app_out -> get_memory_application ( );
+            long mem_in  = app_in -> get_memory_application ( );
+
+            if ( memory -> get_memory_used ( ) >= mem_out && ( memory -> get_memory_used ( ) - mem_out + mem_in ) <= memory -> get_memory_megabites ( ) )
+            {
+                memory -> chance_memory_used ( - mem_out );
+                memory -> chance_memory_used ( + mem_in );
+
+                std::cout << "Swapped -> Out PID " << app_out -> get_pid_app ( ) << " | In PID " << app_in -> get_pid_app ( ) << std::endl;
+            } else
+                {
+                    std::cout << "Swap Error : Not Enough Space In Main Memory !" << std::endl;
+                }
+        }
 };
 // -------------------------------------------
 
@@ -515,7 +593,21 @@ class Mux
         Mux ( ) { }
 
         ~ Mux ( ) { }
+
+        int select_operation ( int control_signal, int a, int b, Ula * ula )
+        {
+            switch ( control_signal )
+            {
+                case 1: return ula -> sum ( a, b );
+                case 2: return ula -> sub ( a, b );
+                case 3: return ula -> and_ ( a, b );
+                case 4: return ula -> or_ ( a, b );
+                case 5: return ula -> xor_ ( a, b );
+                default: return 0;
+            }
+        }
 };
+// -------------------------------------------
 
 class Demux
 {
@@ -523,7 +615,49 @@ class Demux
         Demux ( ) { }
 
         ~ Demux ( ) { }
+
+        void send_output ( int control_signal, int result )
+        {
+            if ( result == - 1 )
+            {
+                std::cout << "( 0 or 1 )" << std::endl;
+                return;
+            } else
+                {
+                    switch ( control_signal )
+                    {
+                        case 1:
+                            std::cout << "Sum = " << result << std::endl;
+                            break;
+
+                        case 2:
+                            std::cout << "Sub = " << result << std::endl;
+                            break;
+
+                        case 3:
+                            std::cout << "AND = " << result << std::endl;
+                            break;
+
+                        case 4:
+                            std::cout << "OR = " << result << std::endl;
+                            break;
+
+                        case 5:
+                            std::cout << "XOR = " << result << std::endl;
+                            break;
+
+                        case 6:
+                            std::cout << "NOT = " << result << std::endl;
+                            break;
+
+                        default:
+                            std::cout << "Invalid Operation" << std::endl;
+                            break;
+                    }
+                }
+        }
 };
+// -------------------------------------------
 
 class Control
 {
@@ -543,10 +677,23 @@ class Control
             delete mux;
             delete demux;
         }
+
+        int execute ( int control_signal, int a, int b, Ula * ula )
+        {
+            if ( control_signal == 6 )
+            {
+                return ula -> not_ ( a );
+            }
+
+            int result = mux -> select_operation ( control_signal, a, b, ula );
+
+            demux -> send_output ( control_signal, result );
+
+            return result;
+        }
 };
 // -------------------------------------------
 
-// -------------------------------------------
 class Cpu
 {
     private :
@@ -575,6 +722,11 @@ class Cpu
         Ula * get_ula ( )
         {
             return ula;
+        }
+
+        Control * get_control ( )
+        {
+            return control;
         }
 
         void insert_cpu ( int pid )
@@ -658,6 +810,28 @@ class Tree
             return root;
         }
 
+        void show_tree_pos_order ( NodeSystemApplication * i )
+        {
+            if ( i != nullptr )
+            {
+                show_tree ( i -> get_left ( ) );
+                show_tree ( i -> get_right ( ) );
+                std::cout << std::endl;
+                i -> show ( );
+            }
+        }
+
+        void show_tree_pre_order ( NodeSystemApplication * i )
+        {
+            if ( i != nullptr )
+            {
+                std::cout << std::endl;
+                i -> show ( );
+                show_tree ( i -> get_left ( ) );
+                show_tree ( i -> get_right ( ) );
+            }
+        }
+
         void show_tree ( NodeSystemApplication * i )
         {
             if ( i != nullptr )
@@ -723,6 +897,7 @@ class So
         Storage * storage;
         Memory * memory;
         Cpu * cpu;
+        Mmu * mmu;
         Tree * tree;
         User * user;
 
@@ -737,6 +912,7 @@ class So
             storage = new Storage ( capacity_storage_megabites );
             memory = new Memory ( capacity_memory_megabites );
             cpu = new Cpu ( );
+            mmu = new Mmu ( );
             tree = new Tree ( );
             user = new User ( );
         }
@@ -754,7 +930,7 @@ class So
         {
             Application * application = new Application ( );
 
-            if ( ( storage -> get_storage_used ( ) + application -> get_storage_application ( ) ) <= storage -> get_storage_megabites ( ) && ( memory -> get_memory_used ( ) < application -> get_memory_application ( ) ) <= memory -> get_memory_megabites ( ) )
+            if ( mmu -> alloc_ ( application, storage, memory ) )
             {
                 tree -> insert ( application );
                 cpu -> insert_cpu ( application -> get_pid_app ( ) );
@@ -892,7 +1068,9 @@ class So
                     case 4:
                         {
                             clear_console ( );
+
                             int option_menu_calculator = - 1;
+                            Control * control = cpu -> get_control ( );
                             Ula * ula = cpu -> get_ula ( );
 
                             do
@@ -905,77 +1083,36 @@ class So
 
                                 clear_console ( );
 
-                               if ( option_menu_calculator != 6 && option_menu_calculator != 0 )
-                               {
+                                if ( option_menu_calculator != 6 && option_menu_calculator != 0 )
+                                {
                                     std::cout << "Write the first value : " << std::endl;
                                     std::cin >> first_value;
                                     std::cout << "Write the second value : " << std::endl;
                                     std::cin >> second_value;
-                               }
+                                }
 
                                 clear_console ( );
 
                                 int result = 0;
 
-                                switch ( option_menu_calculator )
+                                if ( option_menu_calculator != 0 )
                                 {
-                                    case 1:
-                                        {
-                                            result = ula -> sum ( first_value, second_value );
-                                            std::cout << "Sum = " << result << std::endl;
-                                            std::cout << std::endl;
-                                            break;
-                                        }
-                                    
-                                    case 2:
-                                        {
-                                            result = ula -> sub ( first_value, second_value );
-                                            std::cout << "Sub = " << result << std::endl;
-                                            std::cout << std::endl;
-                                            break;
-                                        }
-                                    
-                                    case 3:
-                                        {
-                                            result = ula -> and_ ( first_value, second_value );
-                                            std::cout << "Result = " << result << std::endl;
-                                            std::cout << std::endl;
-                                            break;
-                                        }
+                                    if ( option_menu_calculator == 6 )
+                                    {
+                                        bool input;
 
-                                    case 4:
+                                        std::cout << "Write A Bin : " << std::endl;
+                                        std::cin >> input;
+                                        clear_console ( );
+                                        result = control -> execute ( option_menu_calculator, input, 0, ula );
+                                        std::cout << "Not : " << result << std::endl;
+                                    } else 
                                         {
-                                            result = ula -> or_ ( first_value, second_value );
-                                            std::cout << "Result = " << result << std::endl;
-                                            std::cout << std::endl;
-                                            break;
+                                            result = control -> execute ( option_menu_calculator, first_value, second_value, ula );
                                         }
-                                    
-                                    case 5:
-                                        {
-                                            result = ula -> xor_ ( first_value, second_value );
-                                            std::cout << "Result = " << result << std::endl;
-                                            std::cout << std::endl;
-                                            break;
-                                        }
-
-                                    case 6:
-                                        {
-                                            bool input = false;
-
-                                            std::cout << "Write A Bin : " << std::endl;
-                                            std::cin >> input;
-                                            clear_console ( );
-                                            result = ula -> not_ ( input );
-                                            std::cout << "Result = " << result << std::endl;
-                                            std::cout << std::endl;
-                                            break;
-                                        }
-
-                                    default:
-                                        break;
                                 }
 
+                                std::cout << std::endl;
                                 while ( getchar ( ) != '\n' ) getchar ( );
                                 std::cout << "Enter to continue ..." << std::endl;
                                 getchar ( );
